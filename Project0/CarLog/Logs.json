@@ -1,0 +1,16 @@
+{
+  "LogID": 1,
+  "Date": "10-14-20",
+  "Brands": [
+    {
+      "Name": "Toyota",
+      "Numbers": 3,
+      "Models": ["Prius", "Corolla"]
+    },
+    {
+      "Name": "Lamborghini",
+      "Numbers": 1,
+      "Models": ["Adventador"]
+    }
+  ]
+}
