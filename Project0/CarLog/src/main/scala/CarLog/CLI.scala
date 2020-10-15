@@ -18,8 +18,8 @@ import scala.collection.mutable
 class CLI {
 
   // Don't have to keep establishing new connection to mongoDB
-  //val client = MongoClient()
-  //val connect = new Connection(client)
+  val client = MongoClient()
+  val connect = new Connection(client)
 
   val commandArgPattern: Regex = "(\\w+)\\s*(.*)".r
 
@@ -64,21 +64,22 @@ class CLI {
             implicit val entityReads: Reads[CarEntity] = (
               (JsPath \ "LogID").read[Int](min(1) keepAnd max(100)) and
                 (JsPath \ "Date").read[String](minLength[String](8)) and
+                (JsPath \ "City").read[String](minLength[String](1)) and
+                (JsPath \ "State").read[String](minLength[String](2)) and
                   (JsPath \ "Brands").read[Seq[Branding]]
               )(CarEntity.appl _)
 
 
             json.validate[CarEntity] match {
               case s: JsSuccess[CarEntity] => {
+                // If the parsing succeeded, we store the log into the database
                 val place: CarEntity = s.get
-                // do something with place
-                println(s"From place: $place")
-                //new Connection().insert(place)
+                connect.insert(place)
 
               }
               case e: JsError => {
                 // error handling flow
-                println(e)
+                println(s"Parsing Failed: $e")
               }
             }
 

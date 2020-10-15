@@ -1,16 +1,18 @@
 {
   "LogID": 1,
-  "Date": "10-14-20",
+  "Date": "10-15-20",
+  "City": "Santa Cruz",
+  "State": "California",
   "Brands": [
     {
-      "Name": "Toyota",
-      "Numbers": 3,
-      "Models": ["Prius", "Corolla"]
+      "Name": "Porsche",
+      "Numbers": 1,
+      "Models": ["911"]
     },
     {
-      "Name": "Lamborghini",
-      "Numbers": 1,
-      "Models": ["Adventador"]
+      "Name": "Honda",
+      "Numbers": 3,
+      "Models": ["Civic", "Accord", "Accord"]
     }
   ]
 }

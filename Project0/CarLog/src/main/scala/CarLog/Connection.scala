@@ -15,11 +15,11 @@ class Connection(mongo: MongoClient){
 
     // Mongo scala boilerplate for localhost:
     // Include classOf[T] for all of your classes
-    val codecRegistry = fromRegistries(fromProviders(classOf[CarEntity]), MongoClient.DEFAULT_CODEC_REGISTRY)
+    val codecRegistry = fromRegistries(fromProviders(classOf[CarEntity], classOf[Branding]), MongoClient.DEFAULT_CODEC_REGISTRY)
     //val client = MongoClient()
     val db = mongo.getDatabase("carlogs").withCodecRegistry(codecRegistry)
     val collection: MongoCollection[CarEntity] = db.getCollection("carbrands")
-    //val collection2: MongoCollection[CarEntity] = db.getCollection("carbrands")
+    //val collection2: MongoCollection[CarEntity] = db.getCollection("California")
 
     // helper functions for access and printing, to get us started + skip the Observable data type
     private def getResults[T](obs: Observable[T]): Seq[T] = {
@@ -30,10 +30,10 @@ class Connection(mongo: MongoClient){
       getResults(obs).foreach(println(_))
     }
 
-    printResults(collection.find())
+    //printResults(collection.find())
 
     def insert(doc: CarEntity): Unit = {
-      //printResults(collection.insertOne(doc))
+      printResults(collection.insertOne(doc))
     }
 
     def count() = {
