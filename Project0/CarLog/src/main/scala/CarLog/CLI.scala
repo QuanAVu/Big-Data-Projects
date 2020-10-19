@@ -5,17 +5,11 @@ import java.io.FileNotFoundException
 import org.bson.types.ObjectId
 import org.mongodb.scala.MongoClient
 
-import scala.collection.mutable.{ArrayBuffer, ListBuffer, Map, Set}
-import scala.io.{BufferedSource, Source, StdIn}
+import scala.io.{Source, StdIn}
 import scala.util.matching.Regex
 import play.api.libs.json._
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
-
-import scala.collection.mutable
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.{Duration, DurationInt, SECONDS}
-import scala.concurrent.{Await, Future}
 
 
 class CLI {
@@ -45,12 +39,16 @@ class CLI {
     var continue = true
 
     while(continue){
-      println("// Type (insert filename) to insert log")
-      println("// Type (delete) to delete log")
-      println("// Type (nuke) to remove all logs")
+      println("    [Managing Logs]")
+      println("// View log (view)")
+      println("// Insert log (insert filename)")
+      println("// Update log (update)")
+      println("// Delete log (delete)")
+      println("// Remove all logs (nuke)")
       back()
       print("-> ")
       StdIn.readLine() match {
+          // TODO: Complete contents checking
         case commandArgPattern(cmd, arg) if cmd.equalsIgnoreCase("insert") => {
           try{
             val openFile = Source.fromFile(arg).getLines().mkString
@@ -58,7 +56,8 @@ class CLI {
             val json: JsValue = Json.parse(openFile)
             //println(Json.prettyPrint(json))
 
-            // Required format when READING in Json data,
+
+            // Required formats when READING in Json data,
             // we can set values of what we want to read in
             implicit val brandsReads: Reads[Branding] = (
               (JsPath \ "Name").read[String](minLength[String](1)) and
@@ -82,7 +81,17 @@ class CLI {
               case s: JsSuccess[CarEntity] => {
                 // If the parsing succeeded, we store the log into the database
                 val place: CarEntity = s.get
-                connect.insert(place)
+
+                // Check contents BEFORE inserting into Mongo
+                val u = place.User
+                val city = place.City
+                val state = place.State
+                if(connect.checkEntity(u, city, state) == 0){
+                  connect.insert(place)
+                }
+                else{
+                  println("Insertion Failed!")
+                }
 
               }
               case e: JsError => {
@@ -114,11 +123,21 @@ class CLI {
                 }
               }
             }
-
-
           }
         }
 
+          // TODO: ADD UpdateOne function
+        case e if e.equalsIgnoreCase("update") => {
+
+        }
+          // TODO: ADD View logs function (user toList and forloop to extract single field)
+        case e if e.equalsIgnoreCase("view") => {
+          println("Logs Viewer:")
+          connect.view()
+
+        }
+
+        // CARE: Nuking function!
         case e if e.equalsIgnoreCase("nuke") => {
           println("ARE YOU SURE [Y/N] ?")
           print("-> ")
@@ -146,26 +165,31 @@ class CLI {
   }
   //-------------------------------------------------------------------------------------------------------------------
 
+  // TODO: Complete User Menu, User can only insert/delete/update their own logs
+  // For user: insert function can be similar to admin, delete takes user's name automatically (can perform nuking), update takes user's name also
   def userMenu(): Unit = {
-
+    println("#            [User Menu]           #")
+    println("// View log (view)")
+    println("// Insert log (insert filename)")
+    println("// Update log (update)")
+    println("// Delete log (delete)")
+    println("// Type (back) to logout")
   }
 
-  // TODO: Add in functions for city, brand, account
+  // TODO: Add in update field function and view for log in admin, add more functions (view, insert, update, delete) to account
   def adminMenu(): Unit = {
     println("#            [Admin Menu]           #")
-    println("// Update Log (enter log)")
-    println("// Update City (enter city)")
-    println("// Update Brand (enter brand)")
-    println("// Update Account (enter account)")
+    println("// Manage Logs (log)")
+    println("// Manage Accounts (account)")
     println("// Type (back) to logout of Admin Mode")
   }
 
   // Main menu
   def menu(): Unit = {
     println("#            [Menu]           #")
-    println("// New User (enter new)")
-    println("// Admin Mode (enter admin)")
-    println("// Returning User (enter return)")
+    println("// New User (new)")
+    println("// Admin Mode (admin)")
+    println("// Current User (current)")
     quit()
   }
 
@@ -235,26 +259,24 @@ class CLI {
               print("-> ")
               StdIn.readLine() match {
                 case e if e.equalsIgnoreCase("log") => {
-                  println("Editing Logs")
+
                   parserLog()
                 }
-                case e if e.equalsIgnoreCase("city") => println("Editing city")
-                case e if e.equalsIgnoreCase("brand") => println("Editing brand")
-                case e if e.equalsIgnoreCase("account") => println("Editing account")
+                case e if e.equalsIgnoreCase("account") => println("    [Managing accounts]")
                 case e if e.equalsIgnoreCase("back") => { menu()
                   continue1 = false
                 }
                 case notRecognized => println(s"$notRecognized is not a command!\n Please enter another command...")
               }
             }
-
           }
-          //continue = false
         }
+          // TODO: Complete new user account creation
         case e if e equalsIgnoreCase("new") => {
-          println("new user....")
+          println("Welcome to ECS Club! Would you like to create an account? [Y/N]")
         }
-        case e if e equalsIgnoreCase("return") => {
+          // TODO: Complete current user functions
+        case e if e equalsIgnoreCase("current") => {
           println("Please enter your Username and Password...")
           if(admin() == 0){
             println("What would you like to do today?")
