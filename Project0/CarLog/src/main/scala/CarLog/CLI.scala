@@ -13,39 +13,44 @@ import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 
 import scala.collection.mutable
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.{Duration, DurationInt, SECONDS}
+import scala.concurrent.{Await, Future}
 
 
 class CLI {
 
-  // Don't have to keep establishing new connection to mongoDB
   val client = MongoClient()
   val connect = new Connection(client)
 
   val commandArgPattern: Regex = "(\\w+)\\s*(.*)".r
 
+
   def welcome(): Unit = {
-    println("Welcome to CarLog! \nWould you like to see our car list?")
-    println("Please enter Y for Yes or N for No (enter exit to quit): ")
+    println("=========================================================================")
+    println("*                                                                       *")
+    println("*             Welcome to the Exotic Car Spotting (ECS) Club!            *")
+    println("*                                                                       *")
+    println("*  It is Fall of 2020! Despite everything else going on, I hope you're  *")
+    println("*  staying safe and can find comfort in our ECS Club. Our car logging   *")
+    println("*  system has never been easier to use, but feel free to submit us a    *")
+    println("*  ticket if you have any questions. Have a good one!                   *")
+    println("*                                                                       *")
+    println("=========================================================================")
+
   }
 
-  def quit(): Unit = {
-    println("To quit enter: exit")
-  }
-
-
-  def prompt(): Unit = {
-    //var openedFile: BufferedSource = null
-
-    welcome()
-
+  def parserLog(): Unit = {
     var continue = true
+
     while(continue){
-
-      StdIn.readLine match {
-
-        case e if e equalsIgnoreCase("y") => println("Here is the car list: ")
-        case e if e equalsIgnoreCase("n") => println("What would you like to do? ")
-        case commandArgPattern(cmd, arg) if cmd.equalsIgnoreCase("file") => {
+      println("// Type (insert filename) to insert log")
+      println("// Type (delete) to delete log")
+      println("// Type (nuke) to remove all logs")
+      back()
+      print("-> ")
+      StdIn.readLine() match {
+        case commandArgPattern(cmd, arg) if cmd.equalsIgnoreCase("insert") => {
           try{
             val openFile = Source.fromFile(arg).getLines().mkString
 
@@ -56,17 +61,19 @@ class CLI {
             // we can set values of what we want to read in
             implicit val brandsReads: Reads[Branding] = (
               (JsPath \ "Name").read[String](minLength[String](1)) and
-                (JsPath \ "Numbers").read[Int](min(0) keepAnd max(90))and
-                (JsPath \ "Models").read[Seq[String]]
-            )(Branding.apply _)
+                (JsPath \ "Models").read[Seq[String]] and
+                (JsPath \ "Description").read[String] and
+                (JsPath \ "Url").read[String]
+              )(Branding.apply _)
 
 
             implicit val entityReads: Reads[CarEntity] = (
               (JsPath \ "LogID").read[Int](min(1) keepAnd max(100)) and
+                (JsPath \ "User").read[String](minLength[String](1)) and
                 (JsPath \ "Date").read[String](minLength[String](8)) and
                 (JsPath \ "City").read[String](minLength[String](1)) and
                 (JsPath \ "State").read[String](minLength[String](2)) and
-                  (JsPath \ "Brands").read[Seq[Branding]]
+                (JsPath \ "Brands").read[Seq[Branding]]
               )(CarEntity.appl _)
 
 
@@ -86,8 +93,141 @@ class CLI {
           }catch {
             case fnf: FileNotFoundException => println(s"Failed to find file $arg")
           }
-          quit()
         }
+
+        case commandArgPattern(cmd, arg) if cmd.equalsIgnoreCase("delete") => {
+          var continue = true
+          println("Enter LogID and User of the log you want to delete (Enter -1 for LogID to quit)")
+          while(continue){
+            println("LogID: ")
+            StdIn.readInt() match {
+              case -1 => continue = false
+              case i => {
+                println("User: ")
+                val name = StdIn.readLine()
+                if (connect.deleteLog(i, name) == 0) {
+                  continue = false
+                }
+                else {
+                  println("ERROR: Log cannot be found!")
+                }
+              }
+            }
+
+
+          }
+        }
+
+        case e if e.equalsIgnoreCase("back") => {
+          adminMenu()
+          continue = false
+        }
+        case notRecognized => println(s"$notRecognized is not a command!\n Please enter another command...")
+      }
+    }
+  }
+
+  // TODO: Add in functions for city, brand, account
+  def adminMenu(): Unit = {
+    println("#            [Admin Menu]           #")
+    println("// Update Log (enter log)")
+    println("// Update City (enter city)")
+    println("// Update Brand (enter brand)")
+    println("// Update Account (enter account)")
+    println("// Type (back) to logout of Admin Mode")
+  }
+
+  def menu(): Unit = {
+    println("#            [Menu]           #")
+    println("// New User (enter new)")
+    println("// Admin Mode (enter admin)")
+    println("// Returning User (enter return)")
+    quit()
+  }
+
+  def back(): Unit ={
+    println("// Type (back) to go back ")
+  }
+
+  def quit(): Unit = {
+    println("// Type (exit) to quit ")
+  }
+
+  // Checking admin credentials
+  def admin(): Int = {
+    var i = 0
+    var continue = true
+    println("Please enter your Admin credentials...")
+    println("(Type back to go back to menu)")
+
+    while(continue) {
+      println("User: ")
+      StdIn.readLine match {
+        case e if e.equalsIgnoreCase("back") =>{
+          menu()
+          continue = false
+          i = 1
+        }
+        case e if e.matches("[A-Za-z]+") => {
+          println("Password: ")
+          val x = StdIn.readInt()
+          // Username is found
+          if (connect.user(e, x) == 0) {
+            //println("You're now in Admin Mode!")
+            continue = false
+          }
+          // Username not found
+          else {
+            println("Username or password is incorrect!")
+          }
+        }
+        case notRecognized => println(s"$notRecognized is not a valid user name!")
+      }
+    }
+    i
+  }
+
+  // Main application prompt
+  def prompt(): Unit = {
+    //var openedFile: BufferedSource = null
+
+    // Don't have to keep establishing new connection to mongoDB
+
+    welcome()
+    menu()
+
+    var continue = true
+    while(continue){
+      print("-> ")
+      StdIn.readLine match {
+        case e if e equalsIgnoreCase("admin") =>{
+          if(admin() == 0){
+            println("You're now in Admin Mode!")
+            adminMenu()
+            var continue1 = true
+            while(continue1){
+              print("-> ")
+              StdIn.readLine() match {
+                case e if e.equalsIgnoreCase("log") => {
+                  println("Editing Logs")
+                  parserLog()
+                }
+                case e if e.equalsIgnoreCase("city") => println("Editing city")
+                case e if e.equalsIgnoreCase("brand") => println("Editing brand")
+                case e if e.equalsIgnoreCase("account") => println("Editing account")
+                case e if e.equalsIgnoreCase("back") => { menu()
+                  continue1 = false
+                }
+                case notRecognized => println(s"$notRecognized is not a command!\n Please enter another command...")
+              }
+            }
+
+          }
+          //continue = false
+        }
+        case e if e equalsIgnoreCase("new") => println("Please enter your name: ")
+        case e if e equalsIgnoreCase("return") => println("Welcome back! Please login...")
+
         case commandArgPattern(cmd, arg) if cmd.equalsIgnoreCase("exit") => continue = false
         // Always the last case
         case notRecognized => println(s"$notRecognized is not a command!\n Please enter another command...")
@@ -95,5 +235,6 @@ class CLI {
       //quit()
     }
   }
+  //client.close()
 }
 

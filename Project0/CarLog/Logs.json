@@ -1,18 +1,21 @@
 {
   "LogID": 1,
+  "User": "Admin",
   "Date": "10-15-20",
   "City": "Santa Cruz",
   "State": "California",
   "Brands": [
     {
       "Name": "Porsche",
-      "Numbers": 1,
-      "Models": ["911"]
+      "Models": ["911"],
+      "Description": "A beautiful small beast",
+      "Url": "https://www.instagram.com/?hl=en"
     },
     {
       "Name": "Honda",
-      "Numbers": 3,
-      "Models": ["Civic", "Accord", "Accord"]
+      "Models": ["Civic", "Accord", "Accord"],
+      "Description": "Some description about the models spotted",
+      "Url": "https://www.instagram.com/?hl=en"
     }
   ]
 }
