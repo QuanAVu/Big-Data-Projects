@@ -34,12 +34,13 @@ class CLI {
     println("*  It is Fall of 2020! Despite everything else going on, I hope you're  *")
     println("*  staying safe and can find comfort in our ECS Club. Our car logging   *")
     println("*  system has never been easier to use, but feel free to submit us a    *")
-    println("*  ticket if you have any questions. Have a good one!                   *")
+    println("*  ticket if you have any questions. Have fun!                          *")
     println("*                                                                       *")
     println("=========================================================================")
 
   }
 
+  // Parsing functions-------------------------------------------------------------------------------------------------
   def parserLog(): Unit = {
     var continue = true
 
@@ -118,6 +119,23 @@ class CLI {
           }
         }
 
+        case e if e.equalsIgnoreCase("nuke") => {
+          println("ARE YOU SURE [Y/N] ?")
+          print("-> ")
+          StdIn.readLine() match {
+            case e if e.equalsIgnoreCase("y") => {
+              connect.nuke()
+              continue = false
+              parserLog()
+            }
+            case _ => {
+              continue = false
+              parserLog()
+            }
+
+          }
+        }
+
         case e if e.equalsIgnoreCase("back") => {
           adminMenu()
           continue = false
@@ -125,6 +143,11 @@ class CLI {
         case notRecognized => println(s"$notRecognized is not a command!\n Please enter another command...")
       }
     }
+  }
+  //-------------------------------------------------------------------------------------------------------------------
+
+  def userMenu(): Unit = {
+
   }
 
   // TODO: Add in functions for city, brand, account
@@ -137,6 +160,7 @@ class CLI {
     println("// Type (back) to logout of Admin Mode")
   }
 
+  // Main menu
   def menu(): Unit = {
     println("#            [Menu]           #")
     println("// New User (enter new)")
@@ -153,11 +177,11 @@ class CLI {
     println("// Type (exit) to quit ")
   }
 
-  // Checking admin credentials
+  // Checking admin credentials or user's credentials
   def admin(): Int = {
     var i = 0
     var continue = true
-    println("Please enter your Admin credentials...")
+
     println("(Type back to go back to menu)")
 
     while(continue) {
@@ -173,7 +197,10 @@ class CLI {
           val x = StdIn.readInt()
           // Username is found
           if (connect.user(e, x) == 0) {
-            //println("You're now in Admin Mode!")
+            if(e != "Admin"){
+              println(s"Welcome back $e!")
+            }
+
             continue = false
           }
           // Username not found
@@ -189,9 +216,6 @@ class CLI {
 
   // Main application prompt
   def prompt(): Unit = {
-    //var openedFile: BufferedSource = null
-
-    // Don't have to keep establishing new connection to mongoDB
 
     welcome()
     menu()
@@ -201,6 +225,8 @@ class CLI {
       print("-> ")
       StdIn.readLine match {
         case e if e equalsIgnoreCase("admin") =>{
+          println("Please enter your Admin credentials...")
+          // 0 when successfully logged in
           if(admin() == 0){
             println("You're now in Admin Mode!")
             adminMenu()
@@ -225,8 +251,15 @@ class CLI {
           }
           //continue = false
         }
-        case e if e equalsIgnoreCase("new") => println("Please enter your name: ")
-        case e if e equalsIgnoreCase("return") => println("Welcome back! Please login...")
+        case e if e equalsIgnoreCase("new") => {
+          println("new user....")
+        }
+        case e if e equalsIgnoreCase("return") => {
+          println("Please enter your Username and Password...")
+          if(admin() == 0){
+            println("What would you like to do today?")
+          }
+        }
 
         case commandArgPattern(cmd, arg) if cmd.equalsIgnoreCase("exit") => continue = false
         // Always the last case

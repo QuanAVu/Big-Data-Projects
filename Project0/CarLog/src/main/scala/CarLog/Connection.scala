@@ -1,7 +1,7 @@
 package CarLog
 
 import org.mongodb.scala.model.Filters
-import org.mongodb.scala.model.Filters.{and, equal}
+import org.mongodb.scala.model.Filters.{and, equal, exists}
 import org.mongodb.scala.{MongoClient, MongoCollection, Observable}
 
 import scala.concurrent.Await
@@ -68,6 +68,15 @@ class Connection(mongo: MongoClient){
         else{
             1
         }
+    }
+
+    def nuke(): Unit = {
+      printResults(collection.deleteMany(exists("logID")))
+      println("=======================================")
+      println("*                                     *")
+      println("!!!!!!!!!! BOOOOOOOOOOOOOOOOM !!!!!!!!!")
+      println("*                                     *")
+      println("=======================================")
     }
 
     /*
