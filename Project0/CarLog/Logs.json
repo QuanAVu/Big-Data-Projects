@@ -1,20 +1,20 @@
 {
   "LogID": 1,
-  "User": "Admin",
+  "User": "quan",
   "Date": "10-15-20",
-  "City": "Santa Cruz",
+  "City": "San Francisco",
   "State": "California",
   "Brands": [
     {
       "Name": "Porsche",
       "Models": ["911"],
-      "Description": "A beautiful small beast",
+      "Description": "A beautiful sexy beast",
       "Url": "https://www.instagram.com/?hl=en"
     },
     {
-      "Name": "Honda",
-      "Models": ["Civic", "Accord", "Accord"],
-      "Description": "Some description about the models spotted",
+      "Name": "McLaren",
+      "Models": ["720s", "570s", "600LT"],
+      "Description": "Mind blown!!!",
       "Url": "https://www.instagram.com/?hl=en"
     }
   ]

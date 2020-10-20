@@ -2,6 +2,7 @@ package CarLog
 
 import org.mongodb.scala.model.Filters
 import org.mongodb.scala.model.Filters.{and, equal, exists}
+import org.mongodb.scala.model.Updates.set
 import org.mongodb.scala.{MongoClient, MongoCollection, Observable}
 
 import scala.concurrent.Await
@@ -40,16 +41,33 @@ class Connection(mongo: MongoClient){
     // ------------------------------------Do Not Touch The Above Boiler----------------------------------------------
     //printResults(collection.find())
 
-    def insert(doc: CarEntity): Unit = {
+    def insertLog(doc: CarEntity): Unit = {
       printResults(collection.insertOne(doc))
 
     }
+
+    def insertAcc(acc: Account) = {
+      printResults(collection2.insertOne(acc))
+    }
+
+    def updateAcc(user: String, npass: Int) = {
+      val check = collection2.updateOne(equal("User", user), set("Pass", npass))
+      if(getResults(check).isEmpty == false){
+        0
+      }
+      else{
+        1
+      }
+
+    }
+
     /*
     def count() = {
         //val counter = collection.countDocuments()
         //getResults(counter).foreach(println(_))
     }*/
 
+    // Search for the user
     def user(name: String, p: Int): Int = {
         val check = collection2.find(and(equal("User", name), equal("Pass", p)))
         //Account found, return 0
@@ -61,6 +79,7 @@ class Connection(mongo: MongoClient){
         }
     }
 
+    // Delete log
     def deleteLog(id: Int, user: String): Int = {
       val check = collection.find(and(equal("LogID", id), equal("User", user)))
         if(getResults(check).isEmpty == false){
@@ -73,16 +92,66 @@ class Connection(mongo: MongoClient){
         }
     }
 
-    def view(): Any = {
+    def deleteAcc(user: String, pass: Int): Int = {
+      val check = collection2.find(and(equal("User", user), equal("Pass", pass)))
+      if(getResults(check).isEmpty == false){
+
+        printResults(collection2.deleteOne(and(equal("User", user), equal("Pass", pass))))
+        0
+      }
+      else{
+        1
+      }
+    }
+
+    def viewLog(): Any = {
       val check = collection.find()
       if(getResults(check).isEmpty == false){
+        println("")
         printResults(check)
+
         check
       }
       else{
         println("     EMPTY   ")
       }
 
+    }
+
+    def viewLogMem(name: String): Any = {
+      val check = collection.find(equal("User", name))
+      if(getResults(check).isEmpty == false){
+        println("")
+        printResults(check)
+
+        check
+      }
+      else{
+        println("     EMPTY   ")
+      }
+    }
+
+    def viewAcc(): Any = {
+      val check = collection2.find()
+      if(getResults(check).isEmpty == false){
+        println("")
+        printResults(check)
+        check
+      }
+      else{
+        println("     EMPTY   ")
+      }
+    }
+
+    def checkAcc(user: String): Int = {
+      val check = collection2.find(equal("User", user))
+      if(getResults(check).isEmpty == false){
+        //println("ERROR: User name already taken!")
+        -1
+      }
+      else{
+        0
+      }
     }
 
     // Checks contents of incoming JSON with default documents in Mongo
@@ -115,7 +184,7 @@ class Connection(mongo: MongoClient){
     }
 
     def nuke(): Unit = {
-      printResults(collection.deleteMany(exists("logID")))
+      printResults(collection.deleteMany(exists("LogID")))
       println("=======================================")
       println("*                                     *")
       println("!!!!!!!!!! BOOOOOOOOOOOOOOOOM !!!!!!!!!")

@@ -1,0 +1,10 @@
+{
+  "Lamborghini": ["Huracan", "Aventador", "Urus"],
+  "Porsche": ["718", "911", "Cayenne", "Panamera"],
+  "Ferrari": ["LaFerrari", "F8", "488"],
+  "McLaren": ["720s", "570s", "600LT", "GT"],
+  "Koenigsegg": ["Agera", "Regera", "Gemera", "Jesko"],
+  "Aston_Martin": ["DB11", "DBS", "DBX"],
+  "Bugatti": ["Veyron", "Chiron"],
+  "Maserati": ["GranTurismo", "Levante", "Quattroporte"]
+}
