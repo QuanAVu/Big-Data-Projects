@@ -81,10 +81,13 @@ class Connection(mongo: MongoClient){
 
     // Delete log by user
     def deleteULog(id: Int, user: String, date: String): Int = {
-      val check = collection.find(and(equal("LogID", id), equal("User", user), equal("Date", date)))
+      // Chop off the quotations for date
+      val date2 = date.substring(1, date.length - 1)
+
+      val check = collection.find(and(equal("LogID", id), equal("User", user), equal("Date", date2)))
       if(getResults(check).isEmpty == false){
 
-        printResults(collection.deleteOne(and(equal("LogID", id), equal("User", user), equal("Date", date))))
+        printResults(collection.deleteOne(and(equal("LogID", id), equal("User", user), equal("Date", date2))))
         0
       }
       else{
