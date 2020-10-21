@@ -147,6 +147,7 @@ class Connection(mongo: MongoClient){
     def viewAcc(): Any = {
       val check = collection2.find()
       if(getResults(check).isEmpty == false){
+        // How to pretty print
         println("")
         printResults(check)
         check
@@ -197,11 +198,30 @@ class Connection(mongo: MongoClient){
     }
 
     // Replace user log
-    def repUser(id: Int, name: String, date: String) = {
-      // Find the log to replace
-      val log : CarEntity = getResults(collection.find(and(equal("LogID", id), equal("User", name), equal("Date", date))))(0)
+    def repUser(id: Int, name: String, date: String, doc: CarEntity) = {
 
-      val check = collection.replaceOne(and(equal("LogID", id), equal("User", name), equal("Date", date)), log)
+      val a = doc.LogID
+      val a2 = doc.User
+      val a3 = doc.Date
+      val a4 = doc.City
+      val a5 = doc.State
+      val a6 = doc.Brands
+
+      //Remove double quotations
+      val date2 = date.substring(1, date.length - 1)
+      //println(s"LogID: $id, Name: $name, Date: $date2")
+      //printResults(collection.find(equal("Date", date2)))
+      val check: CarEntity = getResults(collection.find(and(equal("LogID", id), equal("User", name), equal("Date", date2))))(0)
+
+      printResults(collection.replaceOne(and(equal("LogID", id), equal("User", name), equal("Date", date2)),
+        check.copy(LogID = a, User = a2, Date = a3, City = a4, State = a5, Brands = a6)))
+/*
+      val archieComic : Account = getResults(collection2.find(equal("LogID", 1)))(0)
+
+      //println(archieComic)
+
+      // when this executes, we modify the archieComic document to have Replacement title and year 1998
+      printResults(collection2.replaceOne(equal("_id", archieComic._id), archieComic.copy(User = name)))*/
 
     }
 

@@ -350,6 +350,73 @@ class CLI {
   // Replace function for user log
   def replaceU(name: String) = {
 
+    var continue3 = true
+    while(continue3){
+      println("Upload a file to replace with (upload filename):")
+      println("Type (back) to go back")
+      print("->")
+      StdIn.readLine() match {
+        case commandArgPattern(cmd, arg) if cmd.equalsIgnoreCase("upload") => {
+          try{
+            val openFile = Source.fromFile(arg).getLines().mkString
+
+            val json: JsValue = Json.parse(openFile)
+            //println(Json.prettyPrint(json))
+
+
+            // Required formats when READING in Json data,
+            // we can set values of what we want to read in
+            implicit val brandsReads: Reads[Branding] = (
+              (JsPath \ "Name").read[String](minLength[String](1)) and
+                (JsPath \ "Models").read[Seq[String]] and
+                (JsPath \ "Description").read[String] and
+                (JsPath \ "Url").read[String]
+              )(Branding.apply _)
+
+
+            implicit val entityReads: Reads[CarEntity] = (
+              (JsPath \ "LogID").read[Int](min(1) keepAnd max(100)) and
+                (JsPath \ "User").read[String](minLength[String](1)) and
+                (JsPath \ "Date").read[String](minLength[String](8)) and
+                (JsPath \ "City").read[String](minLength[String](1)) and
+                (JsPath \ "State").read[String](minLength[String](2)) and
+                (JsPath \ "Brands").read[Seq[Branding]]
+              )(CarEntity.appl _)
+
+
+            json.validate[CarEntity] match {
+              case s: JsSuccess[CarEntity] => {
+                // If the parsing succeeded, we store the log into the database
+                val place: CarEntity = s.get
+                try{
+                  println("Find the log you want to replace by entering")
+                  println("LogID: ")
+                  val a = StdIn.readInt()
+                  println("Date: ")
+                  val b = StdIn.readLine()
+                  connect.repUser(a, name, b, place)
+                }catch{
+                  case e:Exception => println("ERROR: Incorrect data entered. Try again!")
+                }
+
+              }
+              case e: JsError => {
+                // error handling flow
+                println(s"Parsing Failed: $e")
+              }
+            }
+
+          }catch {
+            case fnf: FileNotFoundException => println(s"Failed to find file $arg")
+          }
+        }
+        case e if e.equalsIgnoreCase("back") =>{
+          continue3 = false
+          //println("You have successfully logged out!")
+        }
+        case notRecog => println(s"$notRecog is not a command!\n Please enter another command...")
+      }
+    }
   }
 
   def currentMem(name: String) = {
@@ -425,7 +492,7 @@ class CLI {
         }
 
         case e if e.equalsIgnoreCase("replace") => {
-
+          replaceU(name)
         }
 
           //Delete user log
@@ -492,7 +559,7 @@ class CLI {
 
   //-------------------------------------------------------------------------------------------------------------------
 
-  // TODO: Finish replace and delete log
+  // TODO: Replace is done?
   // For user: insert function can be similar to admin, delete takes user's name automatically, replace takes user's name also
   def userMenu(): Unit = {
     println("")
@@ -636,7 +703,7 @@ class CLI {
             }
 
         }
-          // TODO: Complete current user functions
+          // TODO: Replace is done?
           // Current member mode
         case e if e equalsIgnoreCase("current") => {
           println("Please enter your Username and Password...")
