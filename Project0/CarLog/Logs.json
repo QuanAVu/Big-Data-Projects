@@ -1,8 +1,8 @@
 {
   "LogID": 1,
-  "User": "quan",
-  "Date": "10-15-20",
-  "City": "San Francisco",
+  "User": "test",
+  "Date": "10-20-20",
+  "City": "Santa Cruz",
   "State": "California",
   "Brands": [
     {
@@ -19,3 +19,4 @@
     }
   ]
 }
+

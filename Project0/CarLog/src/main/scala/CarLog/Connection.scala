@@ -79,7 +79,20 @@ class Connection(mongo: MongoClient){
         }
     }
 
-    // Delete log
+    // Delete log by user
+    def deleteULog(id: Int, user: String, date: String): Int = {
+      val check = collection.find(and(equal("LogID", id), equal("User", user), equal("Date", date)))
+      if(getResults(check).isEmpty == false){
+
+        printResults(collection.deleteOne(and(equal("LogID", id), equal("User", user), equal("Date", date))))
+        0
+      }
+      else{
+        1
+      }
+    }
+
+    // Delete log by Admin
     def deleteLog(id: Int, user: String): Int = {
       val check = collection.find(and(equal("LogID", id), equal("User", user)))
         if(getResults(check).isEmpty == false){
@@ -181,6 +194,15 @@ class Connection(mongo: MongoClient){
         println("ERROR: User is incorrect!")
         -1
       }
+    }
+
+    // Replace user log
+    def repUser(id: Int, name: String, date: String) = {
+      // Find the log to replace
+      val log : CarEntity = getResults(collection.find(and(equal("LogID", id), equal("User", name), equal("Date", date))))(0)
+
+      val check = collection.replaceOne(and(equal("LogID", id), equal("User", name), equal("Date", date)), log)
+
     }
 
     def nuke(): Unit = {

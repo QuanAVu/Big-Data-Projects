@@ -239,8 +239,9 @@ class CLI {
                 println("Pass: ")
                 val pass = StdIn.readInt()
                 if (connect.deleteAcc(i, pass) == 0) {
+                  println(s"Deleted User: [$i]...")
                   continue1 = false
-                  continue = false
+                  //continue = false
                 }
                 else {
                   println("ERROR: Account cannot be found!")
@@ -251,25 +252,30 @@ class CLI {
         }
 
         case e if e.equalsIgnoreCase("update") => {
-          var continue = true
+          var continue1 = true
           println("Enter Username and Password for update (Enter -1 for User to quit)")
-          while(continue){
+          while(continue1){
             println("User: ")
             StdIn.readLine() match {
-              case "-1" => continue = false
+              case "-1" => continue1 = false
               case i => {
                 println("Current Password:")
-                val x = StdIn.readInt()
-                if(connect.user(i, x) == 0){
-                  println("New Password:")
-                  val a = StdIn.readInt()
-                  connect.updateAcc(i, a)
-                  println("PASSWORD has been changed!")
-                  continue = false
+                try{
+                  val x = StdIn.readInt()
+                  if(connect.user(i, x) == 0){
+                    println("New Password:")
+                    val a = StdIn.readInt()
+                    connect.updateAcc(i, a)
+                    println("PASSWORD has been changed!")
+                    continue1 = false
+                  }
+                  else{
+                    println("Cannot find the account!")
+                  }
+                }catch{
+                  case e:Exception => println("Password can only be integers!")
                 }
-                else{
-                  println("Cannot find the account!")
-                }
+
               }
             }
           }
@@ -341,6 +347,11 @@ class CLI {
     }
   }
 
+  // Replace function for user log
+  def replaceU(name: String) = {
+
+  }
+
   def currentMem(name: String) = {
     var continue1 = true
     while(continue1){
@@ -408,11 +419,68 @@ class CLI {
                 println(s"Parsing Failed: $e")
               }
             }
-
           }catch {
             case fnf: FileNotFoundException => println(s"Failed to find file $arg")
           }
         }
+
+        case e if e.equalsIgnoreCase("replace") => {
+
+        }
+
+          //Delete user log
+        case e if e.equalsIgnoreCase("delete") => {
+          var continue2 = true
+          println("Enter LogID and Date of the log you want to delete (Enter -1 for LogID to quit)")
+          while(continue2){
+            println("LogID: ")
+            try{
+              StdIn.readInt() match {
+                case -1 => continue2 = false
+                case i => {
+                  println("Date: ")
+                  val date = StdIn.readLine()
+                  if (connect.deleteULog(i, name, date) == 0) {
+                    println(s"Deleted log [$i]")
+                    continue2 = false
+                  }
+                  else {
+                    println("ERROR: Log cannot be found!")
+                  }
+                }
+              }
+            }catch{
+              case e: Exception => println("LogID has to be an integer!")
+            }
+
+          }
+        }
+
+          // Log format
+        case e if e.equalsIgnoreCase("format") => {
+          println("{")
+          println("  \"LogID\": integer,")
+          println("  \"User\": \"your_name\",")
+          println("  \"Date\": \"mm-dd-yy\",")
+          println("  \"City\": \"city_name\",")
+          println("  \"State\": \"state_name\",")
+          println("  \"Brands\": [")
+          println("     {")
+          println("      \"Name\": \"brand1\",")
+          println("      \"Models\": [\"model1\", \"model2\"],")
+          println("      \"Description\": \"text\",")
+          println("      \"Url\": \"https://www.ecsclub.com\"")
+          println("     },")
+          println("     {")
+          println("      \"Name\": \"brand2\",")
+          println("      \"Models\": [\"model1\", \"model2\"],")
+          println("      \"Description\": \"text\",")
+          println("      \"Url\": \"https://www.ecsclub.com\"")
+          println("     }")
+          println("   ]")
+          println("}")
+        }
+
         case e if e.equalsIgnoreCase("back") =>{
           continue1 = false
           println("You have successfully logged out!")
@@ -433,6 +501,7 @@ class CLI {
     println("// Insert log (insert filename)")
     println("// Replace log (replace)")
     println("// Delete log (delete)")
+    println("// Log Format (format)")
     println("// Type (back) to logout")
     print("-> ")
   }
@@ -481,23 +550,28 @@ class CLI {
         }
         case e if e.matches("[A-Za-z]+") => {
           println("Password: ")
-          val x = StdIn.readInt()
-          // Username is found
-          if (connect.user(e, x) == 0) {
-            // Regular member, not for Admin
-            if(e != "Admin"){
-              println(s"Welcome back $e!")
-              println("What would you like to do today?")
-              // Calls functional menu for member
-              currentMem(e)
-            }
+          try{
+            val x = StdIn.readInt()
+            // Username is found
+            if (connect.user(e, x) == 0) {
+              // Regular member, not for Admin
+              if(e != "Admin"){
+                println(s"Welcome back $e!")
+                println("What would you like to do today?")
+                // Calls functional menu for member
+                currentMem(e)
+              }
 
-            continue = false
+              continue = false
+            }
+            // Username not found
+            else {
+              println("Username or password is incorrect!")
+            }
+          }catch {
+            case e:Exception => println("Password has to be integers!")
           }
-          // Username not found
-          else {
-            println("Username or password is incorrect!")
-          }
+
         }
         case notRecognized => println(s"$notRecognized is not a valid user name!")
       }
@@ -567,7 +641,7 @@ class CLI {
         case e if e equalsIgnoreCase("current") => {
           println("Please enter your Username and Password...")
           if(admin() == 0){
-            // Do nothing...just checking if the account exists
+            // Prints out the JSON format for Logs
           }
         }
 
