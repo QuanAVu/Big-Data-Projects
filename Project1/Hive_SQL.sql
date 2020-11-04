@@ -38,7 +38,7 @@ LIMIT 10;
 
 -- Query 2
 /*	Get the top 10 English wikipedia articles that have internal links
-	that were clicked the most.*/
+	that were clicked the most (highest fraction).*/
 INSERT OVERWRITE DIRECTORY '/user/hive/output/Query2'
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '  '
@@ -51,7 +51,7 @@ LIMIT 10;
 
 -- Query 3
 /* 	Get a series of articles starting from Hotel_California
-	that have the highest clicks (the clicks number is not
+	that have the highest fraction of clicks (the clicks number is not
 	accurate because it is a combination of both clicks that are 
 	from the chain and clicks from when user search for the last
 	internal article as an original article)*/
@@ -76,5 +76,12 @@ LIMIT 10;
 
 
 -- Query 4
+/* 	Get the highest viewed English wikipedia article in October 20, 2020
+	for US, UK, AU based on Internet rush hours of each country.
+*/
+
+-- Query 5
+-- TODO: Populate table with about 70 fields? -- maybe use mapreduce to down size the number of columns?
+
 
 
