@@ -1,4 +1,4 @@
--- Quan Vu, All SQL queries needed for HIVE in project 1
+-- Quan Vu, All SQL queries needed for Project1 in Hive 
 -- The queries are written in a format that works for Hive beeline
 -- so it is a little messy and hard to read.
 
@@ -44,6 +44,8 @@ FIELDS TERMINATED BY '\t';
 -- Load local data into table 
 LOAD DATA LOCAL INPATH '/home/quanvu/Project1-Data/clickstream-enwiki-2020-09.tsv' INTO TABLE clickstream;
 
+-------------------------------------------------------------------------------------------------------------------
+
 -- Query 1
 /*	Get the top 10 highest viewed English wikipedia pages.
 	First sum is the summing of count views from all 24 hours
@@ -61,6 +63,7 @@ FROM (SELECT DOMAIN_CODE, PAGE_TITLE, SUM(COUNT_VIEWS) AS SUM_VIEWS
 GROUP BY NewTable.PAGE_TITLE
 ORDER BY TOTAL_VIEWS DESC
 LIMIT 10;
+
 
 -- Query 2
 /*	Get the top 10 English wikipedia articles that have internal links
@@ -118,12 +121,39 @@ LIMIT 10;
 
 
 
--- Query 5
+-- Query 5 (4 steps and two different tables -- revision and AU page view tables)
 -- TODO: Populate table with about 70 fields? -- maybe use mapreduce to down size the number of columns?
 -- Find the average vandelized/revised page (for October 20,2020) by looking at the cumulative revision count (enwiki revision create only)
--- Once the page is found, pick a revision created that the time of creation to the time it got deleted is short so we can find
--- the number of page views in that time. (before picking the revision, search for the revision that had been deleted) 
+-- Once the page is found, pick a revision where the time of creation to the time it got reverted is short so we can find
+-- the number of page views in that time. (before picking the revision, search for the revision that had been reverted by future revision ) 
 -- Have to compare page_view and revision tables 
+
+-- Look for the average number of revision for a page 
+SELECT ROUND(AVG(page_revision_count), 1) AS AVERAGE_Page_REVISION
+FROM revision 
+WHERE event_entity = 'revision' AND event_timestamp LIKE '2020-10-20%';
+
+-- Look for the page that has the revision count similar to the average revision count (about 9203 counts)
+SELECT page_title, page_revision_count 
+FROM revision 
+WHERE event_timestamp LIKE '2020-10-20%' AND event_entity='revision' AND page_revision_count=9203 LIMIT 10;
+
+-- Look for the revision on the average article that we found where this revision got reverted by a future revision 
+-- this gives us the time when the revision was created and when it got reverted.
+SELECT page_title, event_timestamp, revision_seconds_to_identity_revert 
+FROM revision 
+WHERE page_title='Enrique_Iglesias' AND event_entity='revision' AND revision_is_identity_reverted=true AND event_timestamp LIKE '2020-10-20%' LIMIT 5;
+
+-- Grab the revision timestamp when it was created (2020-10-20 10:42 AM) and the hours in between when it got reverted (about 4 hours in our case)
+-- Out page-views files that we take happen to be the same files we used for AU page view table. 
+-- Look for the article (Enrique_Iglesias) and search for the total page views 
+SELECT NewTable.PAGE_TITLE AS PAGE_TITLE, SUM(NewTable.SUM_VIEWS) AS USERS
+FROM (SELECT DOMAIN_CODE, PAGE_TITLE, SUM(COUNT_VIEWS) AS SUM_VIEWS
+      FROM PAGE_VIEW_AU
+      WHERE DOMAIN_CODE= 'en' OR DOMAIN_CODE= 'en.m'
+      GROUP BY DOMAIN_CODE, PAGE_TITLE) AS NewTable
+WHERE NewTable.PAGE_TITLE = 'Enrique_Iglesias'
+GROUP BY PAGE_TITLE;
 
 -- Query 6 Use MapReduce??? -> Trying to find the average amount of US editors for enwiki
 
