@@ -140,5 +140,5 @@ FROM (SELECT DOMAIN_CODE, PAGE_TITLE, SUM(COUNT_VIEWS) AS SUM_VIEWS
 WHERE NewTable.PAGE_TITLE = 'Enrique_Iglesias'
 GROUP BY PAGE_TITLE;
 
--- Query 6 Use MapReduce??? -> Trying to find the average amount of US editors for enwiki
+-- Query 6 Use MapReduce to find total countries that have editors who edited enwiki articles in October 2020
 
