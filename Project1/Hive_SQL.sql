@@ -13,28 +13,13 @@ LOAD DATA LOCAL INPATH '/home/quanvu/Project1-Data/pageViews/octo20-fullday' INT
 
 /* Three different tables for three countries*/
 -- Rush hour table for UK 
+-- For US and AU tables just change the table name and the path to the file accordingly 
 CREATE TABLE PAGE_VIEW_UK
 (DOMAIN_CODE STRING, PAGE_TITLE STRING, COUNT_VIEWS INT, TOTAL_RESPONSE_SIZE INT)
 ROW FORMAT DELIMITED	
 FIELDS TERMINATED BY ' ';
 
 LOAD DATA LOCAL INPATH '/home/quanvu/Project1-Data/pageViews/octo20-UK' INTO TABLE PAGE_VIEW_UK;
-
--- Rush hour table for US
-CREATE TABLE PAGE_VIEW_US
-(DOMAIN_CODE STRING, PAGE_TITLE STRING, COUNT_VIEWS INT, TOTAL_RESPONSE_SIZE INT)
-ROW FORMAT DELIMITED	
-FIELDS TERMINATED BY ' ';
-
-LOAD DATA LOCAL INPATH '/home/quanvu/Project1-Data/pageViews/octo20-US' INTO TABLE PAGE_VIEW_US;
-
--- Rush hour table for AU 
-CREATE TABLE PAGE_VIEW_AU
-(DOMAIN_CODE STRING, PAGE_TITLE STRING, COUNT_VIEWS INT, TOTAL_RESPONSE_SIZE INT)
-ROW FORMAT DELIMITED	
-FIELDS TERMINATED BY ' ';
-
-LOAD DATA LOCAL INPATH '/home/quanvu/Project1-Data/pageViews/octo20-AU' INTO TABLE PAGE_VIEW_AU;
 
 
 CREATE TABLE CLICKSTREAM
@@ -128,7 +113,7 @@ LIMIT 10;
 -- the number of page views in that time. (before picking the revision, search for the revision that had been reverted by future revision ) 
 -- Have to compare page_view and revision tables 
 
--- Look for the average number of revision for a page 
+-- Look for the average number of revision for a page (in october 20, 2020) rounded to the nearest 10th deci
 SELECT ROUND(AVG(page_revision_count), 1) AS AVERAGE_Page_REVISION
 FROM revision 
 WHERE event_entity = 'revision' AND event_timestamp LIKE '2020-10-20%';
